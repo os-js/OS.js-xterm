@@ -1,0 +1,12 @@
+{
+  "className": "ApplicationXterm",
+  "name": "Xterm",
+  "mime": null,
+  "icon": "apps/utilities-terminal.png",
+  "main": {
+    "webpack": ["main.js", "main.less"],
+    "node": "server/main.js",
+    "php": "server/main.php"
+  },
+  "preload": ["main.js", "main.css"]
+}
