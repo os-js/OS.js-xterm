@@ -3,6 +3,7 @@
   "name": "Xterm",
   "mime": null,
   "icon": "apps/utilities-terminal.png",
+  "category": "system",
   "main": {
     "webpack": ["main.js", "main.less"],
     "node": "server/main.js",
