@@ -89,7 +89,10 @@ class ApplicationXterm extends Application {
 
   createConnection() {
     return new Promise((resolve, reject) => {
-      this._api('connect', {}).then((uri) => {
+      this._api('connect', {
+        secure: window.location.protocol === 'https:',
+        hostname: window.location.hostname
+      }).then((uri) => {
         let pinged = false;
 
         this.ws = new WebSocket(uri);

@@ -34,7 +34,7 @@ const os = require('os');
 const isWin = os.platform === 'win32';
 const execTerm = isWin ? 'cmd.exe' : 'bash';
 
-let port;
+let PORT;
 let terminals = {};
 let server;
 
@@ -76,10 +76,27 @@ const createClient = (opts, ws) => {
   return term;
 };
 
+module.exports.destroy = function() {
+  Object.keys(terminals).forEach((k) => {
+    if ( terminals[k] ) {
+      terminals[k].close();
+    }
+  });
+
+  if ( server ) {
+    server.close();
+    server = null;
+  }
+
+  terminals = {};
+
+  return Promise.resolve(true);
+};
+
 module.exports.register = function(env, metadata, servers) {
-  port = servers.http.address().port + 1;
+  PORT = servers.http.address().port + 1;
   server = new WebSocket.Server({
-    port
+    port: PORT
   });
 
   server.on('connection', (ws) => {
@@ -87,14 +104,16 @@ module.exports.register = function(env, metadata, servers) {
     console.log('> New websocket connection with', term.pid);
   });
 
-  console.log('> Starting Xterm server on port', port);
+  console.log('> Starting Xterm server on port', PORT);
 
   return Promise.resolve(true);
 };
 
 module.exports.api = {
   connect: (env, http, args) => {
-    return Promise.resolve('ws://localhost:' + port);
+    const port = args.port || PORT;
+    const uri = (args.secure ? 'wss' : 'ws') + '://' + args.hostname + ':' + port;
+    return Promise.resolve(uri);
   },
   resize: (env, http, args) => {
     const pid = parseInt(args.pid, 10);
