@@ -5,6 +5,7 @@
     "xterm": "^2.9.2"
   },
   "dependencies": {
-    "node-pty": "^0.7.0"
+    "node-pty": "^0.7.0",
+    "uuid": "^3.1.0"
   }
 }

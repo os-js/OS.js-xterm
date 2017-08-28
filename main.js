@@ -92,17 +92,21 @@ class ApplicationXterm extends Application {
       this._api('connect', {
         secure: window.location.protocol === 'https:',
         hostname: window.location.hostname
-      }).then((uri) => {
+      }).then((result) => {
         let pinged = false;
 
-        this.ws = new WebSocket(uri);
+        this.ws = new WebSocket(result.uri);
+
+        this.ws.onopen = () => {
+          this.ws.send(result.uuid);
+        };
 
         this.ws.onmessage = (ev) => {
           if ( !pinged ) {
             this.pid = parseInt(ev.data, 10);
             pinged = true;
 
-            resolve(uri);
+            resolve(result);
           }
         };
 
@@ -123,11 +127,7 @@ class ApplicationXterm extends Application {
     win._on('inited', () => {
       const term = win.term;
 
-      term.writeln('');
-      term.writeln('...TRYING TO CONNECT...');
-      term.writeln('');
-
-      this.createConnection().then((uri) => {
+      this.createConnection().then((result) => {
 
         console.info('A Xterm session was opened on pid', this.pid);
         if ( this.ws ) {

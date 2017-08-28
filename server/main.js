@@ -29,23 +29,22 @@
  */
 const pty = require('node-pty');
 const WebSocket = require('ws');
-const os = require('os');
-
-const isWin = os.platform === 'win32';
-const execTerm = isWin ? 'cmd.exe' : 'bash';
+const uuidv4 = require('uuid/v4');
 
 let PORT;
 let terminals = {};
+let userMap = {};
 let server;
 
-const createClient = (opts, ws) => {
+const createClient = (username, opts, ws) => {
   const cols = parseInt(opts.cols, 10) || 80;
   const rows = parseInt(opts.rows, 10) || 24;
+  const args = ['-c', 'ssh ' + username + '@localhost'];
 
-  const term = pty.spawn(execTerm, [], {
-    name: 'xterm-color',
+  const term = pty.spawn('bash', args, {
     cols,
     rows,
+    name: 'xterm-color',
     cwd: process.env.PWD,
     env: process.env
   });
@@ -79,7 +78,7 @@ const createClient = (opts, ws) => {
 module.exports.destroy = function() {
   Object.keys(terminals).forEach((k) => {
     if ( terminals[k] ) {
-      terminals[k].close();
+      terminals[k].kill();
     }
   });
 
@@ -100,8 +99,17 @@ module.exports.register = function(env, metadata, servers) {
   });
 
   server.on('connection', (ws) => {
-    const term = createClient({}, ws);
-    console.log('> New websocket connection with', term.pid);
+    let pinged = false;
+    ws.on('message', (uuid) => {
+      if ( !pinged ) {
+        const term = createClient(userMap[uuid], {}, ws);
+        if ( term ) {
+          console.log('> New PTY on', term.pid);
+        }
+
+        pinged = true;
+      }
+    });
   });
 
   console.log('> Starting Xterm server on port', PORT);
@@ -111,10 +119,21 @@ module.exports.register = function(env, metadata, servers) {
 
 module.exports.api = {
   connect: (env, http, args) => {
+    const username = http.session.get('username');
     const port = args.port || PORT;
     const uri = (args.secure ? 'wss' : 'ws') + '://' + args.hostname + ':' + port;
-    return Promise.resolve(uri);
+    const uuid = uuidv4();
+
+    console.log('>', username, 'requested new pty on', uri);
+
+    userMap[uuid] = username;
+
+    return Promise.resolve({
+      uri,
+      uuid
+    });
   },
+
   resize: (env, http, args) => {
     const pid = parseInt(args.pid, 10);
     const cols = parseInt(args.cols, 10) || 80;

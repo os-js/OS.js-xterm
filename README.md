@@ -2,7 +2,11 @@
 
 This is a [xterm.js](https://github.com/sourcelair/xterm.js) application for OS.js.
 
-It allows you to connect to the OS.js server with a real terminal emulator.
+Connects to the OS.js server via SSH.
+
+## Requirements
+
+You'll need **bash** and **ssh** installed (for all platforms).
 
 ## Installation
 
@@ -12,9 +16,7 @@ It allows you to connect to the OS.js server with a real terminal emulator.
 
 ## About
 
-Currently this terminal launches on the same user created by the actual server.
-
-Look forward to the next update for user login support.
+When launched, it takes the logged in user in OS.js and tries to log on to the local server via SSH.
 
 ## License
 
