@@ -123,7 +123,7 @@ class ApplicationXterm extends Application {
         Dialog.create('Input', {
           message: 'Connect with this username:',
           value: Authenticator.instance.getUser().username
-        }, (btn, value) => {
+        }, (ev, btn, value) => {
           connect(value).then(resolve).catch(reject);
         });
       });
