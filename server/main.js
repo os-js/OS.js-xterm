@@ -119,7 +119,7 @@ module.exports.register = function(env, metadata, servers) {
 
 module.exports.api = {
   connect: (env, http, args) => {
-    const username = http.session.get('username');
+    const username = args.username || http.session.get('username');
     const port = args.port || PORT;
     const uri = (args.secure ? 'wss' : 'ws') + '://' + args.hostname + ':' + port;
     const uuid = uuidv4();

@@ -31,6 +31,9 @@ import Terminal from 'xterm';
 
 const Application = OSjs.require('core/application');
 const Window = OSjs.require('core/window');
+const Dialog = OSjs.require('core/dialog');
+const Authenticator = OSjs.require('core/authenticator');
+const DemoAuthenticator = OSjs.require('core/auth/demo');
 
 class ApplicationXtermWindow extends Window {
 
@@ -88,10 +91,11 @@ class ApplicationXterm extends Application {
   }
 
   createConnection() {
-    return new Promise((resolve, reject) => {
+    const connect = (username) => new Promise((resolve, reject) => {
       this._api('connect', {
         secure: window.location.protocol === 'https:',
-        hostname: window.location.hostname
+        hostname: window.location.hostname,
+        username: username
       }).then((result) => {
         let pinged = false;
 
@@ -113,6 +117,19 @@ class ApplicationXterm extends Application {
         return true;
       }).catch(reject);
     });
+
+    if ( Authenticator.instance instanceof DemoAuthenticator ) {
+      return new Promise((resolve, reject) => {
+        Dialog.create('Input', {
+          message: 'Connect with this username:',
+          value: Authenticator.instance.getUser().username
+        }, (btn, value) => {
+          connect(value).then(resolve).catch(reject);
+        });
+      });
+    }
+
+    return connect();
   }
 
   resizeTerminal(cols, rows) {
