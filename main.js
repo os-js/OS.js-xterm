@@ -79,15 +79,15 @@ class ApplicationXterm extends Application {
 
   constructor(args, metadata) {
     super('ApplicationXterm', args, metadata);
-	
-	this.xtermSettings = Utils.mergeObject({ "SSL": false, "SSLKey": null, "SSLCert": null }, Config.getConfig('Xterm'));
+
+    this.xtermSettings = Utils.mergeObject({'SSL': false, 'SSLKey': null, 'SSLCert': null}, Config.getConfig('Xterm'));
     this.ws = null;
-	
-	this._api('createServer', {
-		SSL: this.xtermSettings.SSL && window.location.protocol === 'https:',
-		SSLCert: this.xtermSettings.SSLCert,
-		SSLKey: this.xtermSettings.SSLKey
-	});
+
+    this._api('createServer', {
+      SSL: this.xtermSettings.SSL && window.location.protocol === 'https:',
+      SSLCert: this.xtermSettings.SSLCert,
+      SSLKey: this.xtermSettings.SSLKey
+    });
   }
 
   destroy() {
@@ -108,8 +108,8 @@ class ApplicationXterm extends Application {
         username: username
       }).then((result) => {
         let pinged = false;
-		
-		this.ws = new WebSocket(result.uri);
+
+        this.ws = new WebSocket(result.uri);
 
         this.ws.onopen = () => {
           this.ws.send(result.uuid);
