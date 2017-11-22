@@ -30,6 +30,8 @@
 const pty = require('node-pty');
 const WebSocket = require('ws');
 const uuidv4 = require('uuid/v4');
+const Https = require('https');
+const FileSystem = require('fs');
 
 let PORT;
 let terminals = {};
@@ -94,26 +96,6 @@ module.exports.destroy = function() {
 
 module.exports.register = function(env, metadata, servers) {
   PORT = servers.http.address().port + 1;
-  server = new WebSocket.Server({
-    port: PORT
-  });
-
-  server.on('connection', (ws) => {
-    let pinged = false;
-    ws.on('message', (uuid) => {
-      if ( !pinged ) {
-        const term = createClient(userMap[uuid], {}, ws);
-        if ( term ) {
-          console.log('> New PTY on', term.pid);
-        }
-
-        pinged = true;
-      }
-    });
-  });
-
-  console.log('> Starting Xterm server on port', PORT);
-
   return Promise.resolve(true);
 };
 
@@ -145,6 +127,44 @@ module.exports.api = {
     }
 
     return Promise.resolve(false);
+  },
+  
+  createServer: (env, http, args) => {
+	  
+	  if (server != null) return Promise.resolve(true);
+		
+	  if (args.SSL === true) {
+		const serverSettings = Https.createServer({
+		  cert: FileSystem.readFileSync(args.SSLCert),
+		  key: FileSystem.readFileSync(args.SSLKey)
+		}).listen(PORT);
+	  
+		server = new WebSocket.Server({ server: serverSettings });
+		
+		console.log(server);
+	  }
+	  else {
+		server = new WebSocket.Server({
+		  port: PORT
+		});
+	  }
+
+	  server.on('connection', (ws) => {
+		let pinged = false;
+		ws.on('message', (uuid) => {
+		  if ( !pinged ) {
+			const term = createClient(userMap[uuid], {}, ws);
+			if ( term ) {
+			  console.log('> New PTY on', term.pid);
+			}
+
+			pinged = true;
+		  }
+		});
+	  });
+
+	  console.log('> Starting Xterm server on port', PORT);
+	  
   }
 };
 
