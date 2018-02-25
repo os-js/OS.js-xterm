@@ -11,7 +11,7 @@ You'll need **bash** and **ssh** installed (for all platforms).
 ## Installation
 
 ```
-./bin/add-package.sh xterm Xterm https://github.com/os-js/osjs-xterm.git
+./bin/add-package.sh xterm Xterm https://github.com/os-js/OS.js-xterm.git
 ```
 
 ## About
