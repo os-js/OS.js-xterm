@@ -34,6 +34,8 @@ const Window = OSjs.require('core/window');
 const Dialog = OSjs.require('core/dialog');
 const Authenticator = OSjs.require('core/authenticator');
 const DemoAuthenticator = OSjs.require('core/auth/demo');
+const Config = OSjs.require('core/config');
+const Utils = OSjs.require('utils/misc');
 
 class ApplicationXtermWindow extends Window {
 
@@ -77,7 +79,15 @@ class ApplicationXterm extends Application {
 
   constructor(args, metadata) {
     super('ApplicationXterm', args, metadata);
+
+    this.xtermSettings = Utils.mergeObject({'SSL': false, 'SSLKey': null, 'SSLCert': null}, Config.getConfig('Xterm'));
     this.ws = null;
+
+    this._api('createServer', {
+      SSL: this.xtermSettings.SSL && window.location.protocol === 'https:',
+      SSLCert: this.xtermSettings.SSLCert,
+      SSLKey: this.xtermSettings.SSLKey
+    });
   }
 
   destroy() {
